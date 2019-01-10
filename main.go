@@ -9,11 +9,13 @@ import (
 )
 
 func main() {
+	// start commandline
 	app := cmd.App()
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
+	// setup logging
 	logfile, err := os.OpenFile("diskmgmt.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		log.Error(err)
@@ -21,7 +23,9 @@ func main() {
 	defer logfile.Close()
 	logmw := io.MultiWriter(os.Stdout, logfile)
 	log.SetOutput(logmw)
-	if cmd.Action == "dd" {
+
+	//run the app
+	if cmd.Action == "dd" && cmd.StartDir != "" {
 		if err := cmd.Run(); err != nil {
 			log.Fatal(err)
 		}
