@@ -5,13 +5,14 @@ import (
 	"os"
 
 	"github.com/navinds25/windiskmgmt/cmd"
+	"github.com/navinds25/windiskmgmt/internal/dfcli"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
 	// start commandline
-	app := cmd.App()
-	err := app.Run(os.Args)
+	cliapp := dfcli.App()
+	err := cliapp.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,10 +26,13 @@ func main() {
 	log.SetOutput(logmw)
 
 	//run the app
-	if cmd.Action == "dd" && cmd.StartDir != "" {
-		if err := cmd.Run(); err != nil {
-			log.Fatal(err)
-		}
+	//if dfcli.Action == "dd" && dfcli.StartDir != "" {
+	//	if err := cmd.Run(); err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}
 
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
 	}
 }

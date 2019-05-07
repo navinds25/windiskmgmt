@@ -12,7 +12,7 @@ windows:
 
 .PHONY: linux
 linux:
-	go build .
+	go build -race .
 
 .PHONY: clean
 clean:
