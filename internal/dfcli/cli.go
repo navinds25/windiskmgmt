@@ -2,26 +2,21 @@ package dfcli
 
 import "github.com/urfave/cli"
 
-// Dryrun for controlling dryrun flag & operation
-var Dryrun bool
+// CliFlagsStruct is the struct for the commandline flags.
+type CliFlagsStruct struct {
+	Dryrun          bool
+	Debug           bool
+	Action          string
+	StartDir        string
+	DelDir          string
+	SkipDir         string
+	SkipDirectories []string
+	ListDB          bool
+	DFL             string
+}
 
-// Action for command type
-var Action string
-
-// StartDir root dir for searching
-var StartDir string
-
-// DelDir destination directory for files to be deleted.
-var DelDir string
-
-// SkipDir contains the commandline directories to be skipped.
-var SkipDir string
-
-// SkipDirectories is a string slice containing all the directories to be skipped.
-var SkipDirectories []string
-
-// Debug for controlling debug flag & operation
-var Debug bool
+// CliFlags is the instance of the cli flags.
+var CliFlags CliFlagsStruct
 
 // deleteDuplicates is the command object for the cli
 var deleteDuplicates = cli.Command{
@@ -29,34 +24,73 @@ var deleteDuplicates = cli.Command{
 	Aliases: []string{"delete_duplicates"},
 	Usage:   "Move duplicate files to a delete folder.",
 	Action: func(c *cli.Context) error {
-		Action = "dd"
+		CliFlags.Action = "dd"
 		return nil
 	},
 	Flags: []cli.Flag{
 		cli.BoolFlag{
 			Name:        "debug",
 			Usage:       "Enable debug logging",
-			Destination: &Debug,
+			Destination: &CliFlags.Debug,
 		},
 		cli.BoolFlag{
 			Name:        "dryrun",
 			Usage:       "Disable/Enable dryrun",
-			Destination: &Dryrun,
+			Destination: &CliFlags.Dryrun,
 		},
 		cli.StringFlag{
 			Name:        "startdir",
 			Usage:       "directory to start from",
-			Destination: &StartDir,
+			Destination: &CliFlags.StartDir,
 		},
 		cli.StringFlag{
 			Name:        "deldir",
 			Usage:       "directory to collect files to be deleted",
-			Destination: &DelDir,
+			Destination: &CliFlags.DelDir,
 		},
 		cli.StringFlag{
 			Name:        "skipdir",
 			Usage:       "directories to be skipped",
-			Destination: &SkipDir,
+			Destination: &CliFlags.SkipDir,
+		},
+	},
+}
+
+var infoCommand = cli.Command{
+	Name:    "info",
+	Aliases: []string{"i"},
+	Usage:   "info",
+	Action: func(c *cli.Context) error {
+		CliFlags.Action = "info"
+		return nil
+	},
+	Flags: []cli.Flag{
+		cli.BoolFlag{
+			Name:        "list-db",
+			Usage:       "list contents of the database",
+			Destination: &CliFlags.ListDB,
+		},
+	},
+}
+
+var singleOpCommand = cli.Command{
+	Name:    "single-op",
+	Aliases: []string{"op"},
+	Usage:   "run a single operation, instead of the entire process.",
+	Action: func(c *cli.Context) error {
+		CliFlags.Action = "single-op"
+		return nil
+	},
+	Flags: []cli.Flag{
+		cli.StringFlag{
+			Name:        "dfl",
+			Usage:       "duplicate-files-list: input file containing list of duplicate files.",
+			Destination: &CliFlags.DFL,
+		},
+		cli.BoolFlag{
+			Name:        "debug",
+			Usage:       "Enable debug logging",
+			Destination: &CliFlags.Debug,
 		},
 	},
 }
@@ -68,6 +102,8 @@ func App() *cli.App {
 	app.Usage = "For finding duplicate files & deleting them"
 	app.Commands = []cli.Command{
 		deleteDuplicates,
+		infoCommand,
+		singleOpCommand,
 	}
 	return app
 }

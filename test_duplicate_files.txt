@@ -1,0 +1,7 @@
+files:
+  "5 equal files of size 3317877219":
+   - "/home/navin/go/src/github.com/navinds25/windiskmgmt/_test_files/dup_file1.txt"
+   - "/home/navin/go/src/github.com/navinds25/windiskmgmt/_test_files/dup_file2.txt"
+   - "/home/navin/go/src/github.com/navinds25/windiskmgmt/_test_files/dup_file3.txt"
+   - "/home/navin/go/src/github.com/navinds25/windiskmgmt/_test_files/dup_file40.txt"
+   - "/home/navin/go/src/github.com/navinds25/windiskmgmt/_test_files/dup_file50.txt"

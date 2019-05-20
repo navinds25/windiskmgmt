@@ -1,48 +1,76 @@
-package cmd
+package main
 
 import (
-	"strings"
+	"io"
+	"os"
+	"path"
+	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/navinds25/windiskmgmt/pkg/diskdata"
+
+	"github.com/dgraph-io/badger"
 
 	"github.com/navinds25/windiskmgmt/internal/app"
 	"github.com/navinds25/windiskmgmt/internal/dfcli"
-	"github.com/navinds25/windiskmgmt/internal/dfconfig"
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
-// GetSkipDirectories returns the directories to be skipped
-func GetSkipDirectories() []string {
-	defaultDirs := []string{"/proc", "/run", "/sys", "/tmp"}
-	if strings.Contains(dfcli.SkipDir, ",") {
-		skipdirs := strings.Split(dfcli.SkipDir, ",")
-		dirs := defaultDirs
-		for _, dir := range skipdirs {
-			dirs = append(dirs, dir)
-		}
-		return dirs
-	} else {
-		dirs := append(defaultDirs, dfcli.SkipDir)
-		return dirs
-	}
-}
-
-// Run main function for the application
-func Run() error {
-	//	SkipDirectories = GetSkipDirectories()
-	duplicateFilesConf := "duplicate_files_2019-04-15.txt"
-	dfconf, err := dfconfig.GetConfig(duplicateFilesConf)
+func logSetup() error {
+	logfileName := "diskmgmt.log"
+	logfile, err := os.OpenFile(logfileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
-	for key, files := range dfconf.Files {
-		log.Info("Processing for key:", key)
-		//filesInfo, err := app.GetInfoConfFiles(files)
-		_, err := app.GetInfoConfFiles(files)
-		if err != nil {
-			return err
-		}
-		//log.Println(filesInfo)
-	}
-	//app.GetInfoConfFiles(dfconf.Files)
+	logwriter := io.MultiWriter(os.Stdout, logfile)
+	log.SetOutput(logwriter)
+	log.SetReportCaller(true)
+	customLogFormat := new(logrus.JSONFormatter)
+	customLogFormat.PrettyPrint = true
+	customLogFormat.TimestampFormat = "2006-01-02 15:04:05"
+	log.SetFormatter(customLogFormat)
+	//if app.CliVal.Debug {
+	//	log.SetLevel(log.DebugLevel)
+	//	log.Debug("Debug logs enabled!")
+	//}
 	return nil
+}
+
+func main() {
+	// start commandline
+	cliapp := dfcli.App()
+	err := cliapp.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Read config
+	if err := logSetup(); err != nil {
+		log.Fatal(err)
+	}
+
+	// DB Setup
+	currentDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	datadir := path.Join(currentDir, "data")
+	filesDBOpts := badger.DefaultOptions
+	filesDBOpts.Dir = datadir
+	filesDBOpts.ValueDir = path.Join(datadir, "value")
+	filesDBOpts.Logger = log.New()
+	filesDB, err := badger.Open(filesDBOpts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	diskdata.InitDB(diskdata.BadgerDB{
+		DB: filesDB,
+	})
+	defer diskdata.DataStore.CloseDB()
+	log.Debug("Database has been setup")
+
+	// Process Cli
+	if err := app.ProcessCli(); err != nil {
+		log.Fatal(err)
+	}
 }

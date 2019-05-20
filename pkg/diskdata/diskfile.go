@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -18,17 +19,17 @@ type DiskFile interface {
 	GetInfo(string) error
 	DeleteFile(string, bool) error
 	GetChecksum() error
-	ToDB()
-	CheckDB()
 }
 
 // FileInfo struct for file info
 type FileInfo struct {
-	File     string
-	Basename string
-	Checksum uint32
-	Size     int64
-	Modified time.Time
+	File      string
+	Basename  string
+	Checksum  string
+	Size      int64
+	Modified  time.Time
+	Priority  int
+	DelStatus string
 }
 
 // GetInfo returns FileInfo struct with info on files
@@ -87,17 +88,9 @@ func (file *FileInfo) GetChecksum() error {
 	if err != nil {
 		return err
 	}
-	file.Checksum = crc32.Checksum(data, crc32q)
-	return nil
-}
-
-// ToDB adds the file to the DB
-func (file *FileInfo) ToDB() error {
-	return nil
-}
-
-// CheckDB checks the DB for the file
-func (file *FileInfo) CheckDB() error {
+	rawChecksum := crc32.Checksum(data, crc32q)
+	uInt64 := uint64((rawChecksum))
+	file.Checksum = strconv.FormatUint(uInt64, 10)
 	return nil
 }
 
@@ -112,14 +105,13 @@ func Get5mChecksum(file io.Reader, filesize int64) (uint32, error) {
 			return 0, err
 		}
 		return crc32.Checksum(data, crc32q), nil
-	} else {
-		reader := bufio.NewReaderSize(file, 5000000)
-		data, err := reader.Peek(5000000)
-		if err != nil {
-			return 0, err
-		}
-		checksum := crc32.Checksum(data[:5000000], crc32q)
-		reader.Reset(file)
-		return checksum, nil
 	}
+	reader := bufio.NewReaderSize(file, 5000000)
+	data, err := reader.Peek(5000000)
+	if err != nil {
+		return 0, err
+	}
+	checksum := crc32.Checksum(data[:5000000], crc32q)
+	reader.Reset(file)
+	return checksum, nil
 }

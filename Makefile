@@ -12,7 +12,7 @@ windows:
 
 .PHONY: linux
 linux:
-	go build -race .
+	go build -o windiskmgmt cmd/cmd.go
 
 .PHONY: clean
 clean:

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/ghodss/yaml"
 	"github.com/navinds25/windiskmgmt/pkg/diskdata"
@@ -54,22 +55,24 @@ func getCheckSum(file io.Reader) (uint32, error) {
 }
 
 // GetFileInfo returns FileInfo struct with info on files
-func GetFileInfo(filename string) (diskdata.FileInfo, error) {
+func GetFileInfo(filename string) (file diskdata.FileInfo, err error) {
 	theFile, err := os.Open(filename)
 	if err != nil {
-		return diskdata.FileInfo{}, errors.New("unable to open file")
+		return file, errors.New("unable to open file")
 	}
 	defer theFile.Close()
 	fileDetails, err := theFile.Stat()
 	if err != nil {
-		return diskdata.FileInfo{}, err
+		return file, err
 	}
 	fileSize := fileDetails.Size()
-	checksum, err := getCheckSum(theFile)
+	rawChecksum, err := getCheckSum(theFile)
 	if err != nil {
-		return diskdata.FileInfo{}, err
+		return file, err
 	}
-	file := diskdata.FileInfo{
+	uInt64 := uint64(rawChecksum)
+	checksum := strconv.FormatUint(uInt64, 10)
+	file = diskdata.FileInfo{
 		File:     filename,
 		Basename: path.Base(filename),
 		Checksum: checksum,

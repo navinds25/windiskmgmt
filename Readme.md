@@ -12,8 +12,7 @@
  - [ ] Loop over the keys of the map, if the key has only one entry continue.
 
  - [ ] If the key has multiple entries, check if Folders are in High Priority List Folders. -> channel
- - [ ] Check if files are in Low Priority List Files.
-? Add value for priority for file to be deleted.
+ - [ ] Check if files are in Low Priority List Files.? Add value for priority for file to be deleted.
 
  - [ ] If file needs to be deleted add it to a slice filesToBeDeleted. ->channel
  - [ ] Remove the list of files from the FileSize DB.
