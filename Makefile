@@ -1,14 +1,14 @@
 COMMIT=$(shell git rev-parse --short HEAD)
 DATE=$(shell date +%F)
 BUILD=$(shell echo "${BUILDNUMBER}")
-NAME="windiskmgmt.exe"
+NAME="windiskmgmt"
 GO_LDFLAGS=-ldflags "-X main.Version=build="$(BUILD)"|commit="$(COMMIT)"|date="$(DATE)""
 
 all: clean fmt lint vet megacheck cover
 
 .PHONY: windows
 windows:
-	CGO_ENABLED=1 CC=/data/junk/bin/x86_64-w64-mingw32-gcc GOOS=windows go build .
+	CGO_ENABLED=1 CC=/data/junk/bin/x86_64-w64-mingw32-gcc GOOS=windows go build -o windiskmgmt.exe cmd/cmd.go
 
 .PHONY: linux
 linux:

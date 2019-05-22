@@ -50,7 +50,8 @@ func (badgerdb BadgerDB) AddFile(file *FileInfo) error {
 
 // AddFileMap takes a map of files by  checksum and adds it to the database.
 func (badgerdb BadgerDB) AddFileMap(fileMap map[string][]FileInfo) error {
-	badgerdb.WTX = badgerdb.DB.NewTransaction(true)
+	//badgerdb.WTX = badgerdb.DB.NewTransaction(true)
+	wtx := badgerdb.DB.NewTransaction(true)
 	for checksum, files := range fileMap {
 		var value bytes.Buffer
 		fileList := FileList{
@@ -60,11 +61,11 @@ func (badgerdb BadgerDB) AddFileMap(fileMap map[string][]FileInfo) error {
 			return err
 		}
 		log.Infof("checksum: %s, files: %v", checksum, files)
-		if err := badgerdb.WTX.Set([]byte(checksum), value.Bytes()); err != nil {
+		if err := wtx.Set([]byte(checksum), value.Bytes()); err != nil {
 			return err
 		}
 	}
-	if err := badgerdb.WTX.Commit(); err != nil {
+	if err := wtx.Commit(); err != nil {
 		return err
 	}
 	return nil

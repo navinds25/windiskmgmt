@@ -6,6 +6,8 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/dgraph-io/badger/options"
+
 	"github.com/navinds25/windiskmgmt/pkg/diskdata"
 
 	"github.com/dgraph-io/badger"
@@ -59,6 +61,8 @@ func main() {
 	filesDBOpts.Dir = datadir
 	filesDBOpts.ValueDir = path.Join(datadir, "value")
 	filesDBOpts.Logger = log.New()
+	filesDBOpts.Truncate = true
+	filesDBOpts.ValueLogLoadingMode = options.FileIO
 	filesDB, err := badger.Open(filesDBOpts)
 	if err != nil {
 		log.Fatal(err)
