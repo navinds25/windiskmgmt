@@ -13,6 +13,7 @@ type CliFlagsStruct struct {
 	SkipDirectories []string
 	ListDB          bool
 	DFL             string
+	NoDB            bool
 }
 
 // CliFlags is the instance of the cli flags.
@@ -95,6 +96,34 @@ var singleOpCommand = cli.Command{
 	},
 }
 
+var processConfCommand = cli.Command{
+	Name:    "process-conf",
+	Aliases: []string{"pc"},
+	Usage:   "process files from conf in memory.",
+	Action: func(c *cli.Context) error {
+		CliFlags.Action = "process-conf"
+		CliFlags.NoDB = true
+		return nil
+	},
+	Flags: []cli.Flag{
+		cli.StringFlag{
+			Name:        "dfl",
+			Usage:       "duplicate-files-list: input file containing list of duplicate files.",
+			Destination: &CliFlags.DFL,
+		},
+		cli.BoolFlag{
+			Name:        "dryrun",
+			Usage:       "Disable/Enable dryrun",
+			Destination: &CliFlags.Dryrun,
+		},
+		cli.BoolFlag{
+			Name:        "debug",
+			Usage:       "Enable debug logging",
+			Destination: &CliFlags.Debug,
+		},
+	},
+}
+
 // App for all commandline arguments
 func App() *cli.App {
 	app := cli.NewApp()
@@ -104,6 +133,7 @@ func App() *cli.App {
 		deleteDuplicates,
 		infoCommand,
 		singleOpCommand,
+		processConfCommand,
 	}
 	return app
 }

@@ -51,32 +51,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// DB Setup
-	currentDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		log.Fatal(err)
+	if !dfcli.CliFlags.NoDB {
+		// DB Setup
+		currentDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		if err != nil {
+			log.Fatal(err)
+		}
+		datadir := path.Join(currentDir, "data")
+		filesDBOpts := badger.DefaultOptions
+		filesDBOpts.Dir = datadir
+		filesDBOpts.ValueDir = path.Join(datadir, "value")
+		filesDBOpts.Logger = log.New()
+		filesDBOpts.Truncate = true
+		filesDBOpts.ValueLogLoadingMode = options.FileIO
+		filesDBOpts.TableLoadingMode = options.FileIO
+		filesDBOpts.NumMemtables = 1
+		filesDBOpts.NumLevelZeroTables = 1
+		filesDBOpts.NumLevelZeroTablesStall = 2
+		filesDBOpts.NumCompactors = 1
+		filesDB, err := badger.Open(filesDBOpts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		diskdata.InitDB(diskdata.BadgerDB{
+			DB: filesDB,
+		})
+		defer diskdata.DataStore.CloseDB()
+		log.Debug("Database has been setup")
 	}
-	datadir := path.Join(currentDir, "data")
-	filesDBOpts := badger.DefaultOptions
-	filesDBOpts.Dir = datadir
-	filesDBOpts.ValueDir = path.Join(datadir, "value")
-	filesDBOpts.Logger = log.New()
-	filesDBOpts.Truncate = true
-	filesDBOpts.ValueLogLoadingMode = options.FileIO
-	filesDBOpts.TableLoadingMode = options.FileIO
-	filesDBOpts.NumMemtables = 1
-	filesDBOpts.NumLevelZeroTables = 1
-	filesDBOpts.NumLevelZeroTablesStall = 2
-	filesDBOpts.NumCompactors = 1
-	filesDB, err := badger.Open(filesDBOpts)
-	if err != nil {
-		log.Fatal(err)
-	}
-	diskdata.InitDB(diskdata.BadgerDB{
-		DB: filesDB,
-	})
-	defer diskdata.DataStore.CloseDB()
-	log.Debug("Database has been setup")
 
 	// Process Cli
 	if err := app.ProcessCli(); err != nil {

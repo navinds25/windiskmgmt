@@ -28,6 +28,10 @@ func ProcessCli() error {
 		if err := ProcessDBFiles(); err != nil {
 			return err
 		}
+	case "process-conf":
+		if err := ReadProcessConfFiles(dfcli.CliFlags.DFL); err != nil {
+			return err
+		}
 	default:
 		fmt.Println("select one of the options or -h for help.")
 	}

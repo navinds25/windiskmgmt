@@ -91,8 +91,6 @@ func deleteFiles(input []*diskdata.FileInfo) error {
 				if err := os.Remove(file.File); err != nil {
 					return err
 				}
-			} else {
-				log.WithField("delFile", file.File)
 			}
 			log.Info("deleted file: ", file.File)
 		} else {
@@ -112,6 +110,79 @@ func LoadToDB(duplicateFilesConf string) error {
 		log.Info("Processing for key:", key)
 		err := GetInfoConfFiles(files)
 		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ReadProcessConfFiles reads and processes the conf files in memory.
+func ReadProcessConfFiles(duplicateFilesConf string) error {
+	dfconf, err := dfconfig.GetConfig(duplicateFilesConf)
+	if err != nil {
+		return err
+	}
+	for key, files := range dfconf.Files {
+		log.Info("Processing for key:", key)
+		err := ProcessConfFiles(files)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ProcessConfFiles gets the file Info
+// when reading from duplicate files configuration.
+func ProcessConfFiles(files []string) error {
+	log.Info("files", files)
+	fileMap := make(map[string][]*diskdata.FileInfo)
+	for _, file := range files {
+		fInfo, err := dfconfig.GetFileInfo(file)
+		if err != nil {
+			if err.Error() == "unable to open file" {
+				log.Error(err)
+				continue
+			} else {
+				log.Error(err)
+				return err
+			}
+		}
+		fileMap[fInfo.Checksum] = append(fileMap[fInfo.Checksum], fInfo)
+	}
+	if err := ProcessFiles(fileMap); err != nil {
+		return err
+	}
+	return nil
+}
+
+func printFiles(dupFilesList []*diskdata.FileInfo) {
+	//keepFiles := []*diskdata.FileInfo{}
+	//delFiles := []*diskdata.FileInfo{}
+	printMap := make(map[string][]string)
+	for _, file := range dupFilesList {
+		if file.DelStatus == "delete" && !file.DoNotDelete {
+			//delFiles = append(delFiles, file)
+			printMap["delete_files"] = append(printMap["delete_files"], file.File)
+		} else {
+			//keepFiles = append(keepFiles, file)
+			printMap["keep_files"] = append(printMap["keep_files"], file.File)
+		}
+	}
+	log.WithFields(log.Fields{
+		"keep_files":   printMap["keep_files"],
+		"delete_files": printMap["delete_files"],
+	}).Info("files map")
+}
+
+// ProcessFiles processes file maps
+func ProcessFiles(fileMap map[string][]*diskdata.FileInfo) error {
+	for _, dupFilesList := range fileMap {
+		if err := compareFiles(dupFilesList); err != nil {
+			return err
+		}
+		printFiles(dupFilesList)
+		if err := deleteFiles(dupFilesList); err != nil {
 			return err
 		}
 	}
