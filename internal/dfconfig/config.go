@@ -2,7 +2,6 @@ package dfconfig
 
 import (
 	"encoding/json"
-	"errors"
 	"hash/crc32"
 	"io"
 	"io/ioutil"
@@ -58,7 +57,7 @@ func getCheckSum(file io.Reader) (uint32, error) {
 func GetFileInfo(filename string) (file *diskdata.FileInfo, err error) {
 	theFile, err := os.Open(filename)
 	if err != nil {
-		return file, errors.New("unable to open file")
+		return file, err
 	}
 	defer theFile.Close()
 	fileDetails, err := theFile.Stat()

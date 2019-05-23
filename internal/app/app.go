@@ -75,7 +75,7 @@ func compareFiles(input []*diskdata.FileInfo) error {
 		}
 	}
 	sort.Slice(input, func(i, j int) bool {
-		return input[i].Priority < input[j].Priority
+		return input[i].Priority > input[j].Priority
 	})
 	input[0].DelStatus = "keep"
 	for i := 1; i < len(input); i++ {
@@ -140,13 +140,8 @@ func ProcessConfFiles(files []string) error {
 	for _, file := range files {
 		fInfo, err := dfconfig.GetFileInfo(file)
 		if err != nil {
-			if err.Error() == "unable to open file" {
-				log.Error(err)
-				continue
-			} else {
-				log.Error(err)
-				return err
-			}
+			log.WithField("err_file", file).Error(err)
+			continue
 		}
 		fileMap[fInfo.Checksum] = append(fileMap[fInfo.Checksum], fInfo)
 	}
@@ -157,15 +152,11 @@ func ProcessConfFiles(files []string) error {
 }
 
 func printFiles(dupFilesList []*diskdata.FileInfo) {
-	//keepFiles := []*diskdata.FileInfo{}
-	//delFiles := []*diskdata.FileInfo{}
 	printMap := make(map[string][]string)
 	for _, file := range dupFilesList {
 		if file.DelStatus == "delete" && !file.DoNotDelete {
-			//delFiles = append(delFiles, file)
 			printMap["delete_files"] = append(printMap["delete_files"], file.File)
 		} else {
-			//keepFiles = append(keepFiles, file)
 			printMap["keep_files"] = append(printMap["keep_files"], file.File)
 		}
 	}
