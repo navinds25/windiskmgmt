@@ -63,6 +63,11 @@ func main() {
 	filesDBOpts.Logger = log.New()
 	filesDBOpts.Truncate = true
 	filesDBOpts.ValueLogLoadingMode = options.FileIO
+	filesDBOpts.TableLoadingMode = options.FileIO
+	filesDBOpts.NumMemtables = 1
+	filesDBOpts.NumLevelZeroTables = 1
+	filesDBOpts.NumLevelZeroTablesStall = 2
+	filesDBOpts.NumCompactors = 1
 	filesDB, err := badger.Open(filesDBOpts)
 	if err != nil {
 		log.Fatal(err)

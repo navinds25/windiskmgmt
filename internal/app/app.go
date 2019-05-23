@@ -15,7 +15,7 @@ import (
 // when reading from duplicate files configuration.
 func GetInfoConfFiles(files []string) error {
 	log.Info("files", files)
-	fileMap := make(map[string][]diskdata.FileInfo)
+	fileMap := make(map[string][]*diskdata.FileInfo)
 	for _, file := range files {
 		fInfo, err := dfconfig.GetFileInfo(file)
 		if err != nil {
@@ -52,12 +52,11 @@ func ProcessDBFiles() error {
 		return err
 	}
 	for _, files := range dbFiles {
-		log.Println("this thing ?:", files)
-		filesWStatus, err := compareFiles(files.Files)
+		log.Debug("this thing ?:", files)
+		err := compareFiles(files.Files)
 		if err != nil {
 			return err
 		}
-		log.Println("delFiles: ", filesWStatus)
 		if err := deleteFiles(files.Files); err != nil {
 			return err
 		}
@@ -66,13 +65,13 @@ func ProcessDBFiles() error {
 }
 
 // CompareFiles compares files of the same size.
-func compareFiles(input []diskdata.FileInfo) (output []diskdata.FileInfo, err error) {
+func compareFiles(input []*diskdata.FileInfo) error {
 	for _, file := range input {
-		if err := CheckHighPriorityFolders(&file); err != nil {
-			return nil, err
+		if err := CheckHighPriorityFolders(file); err != nil {
+			return err
 		}
-		if err := CheckLowPriorityFiles(&file); err != nil {
-			return nil, err
+		if err := CheckLowPriorityFiles(file); err != nil {
+			return err
 		}
 	}
 	sort.Slice(input, func(i, j int) bool {
@@ -82,12 +81,12 @@ func compareFiles(input []diskdata.FileInfo) (output []diskdata.FileInfo, err er
 	for i := 1; i < len(input); i++ {
 		input[i].DelStatus = "delete"
 	}
-	return input, nil
+	return nil
 }
 
-func deleteFiles(input []diskdata.FileInfo) error {
+func deleteFiles(input []*diskdata.FileInfo) error {
 	for _, file := range input {
-		if file.DelStatus == "delete" {
+		if file.DelStatus == "delete" && !file.DoNotDelete {
 			if !dfcli.CliFlags.Dryrun {
 				if err := os.Remove(file.File); err != nil {
 					return err

@@ -1,7 +1,7 @@
 package app
 
 import (
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/navinds25/windiskmgmt/internal/dfcli"
@@ -29,7 +29,7 @@ func ProcessCli() error {
 			return err
 		}
 	default:
-		log.Println("select one of the options or -h for help.")
+		fmt.Println("select one of the options or -h for help.")
 	}
 	return nil
 }

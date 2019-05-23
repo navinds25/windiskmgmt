@@ -16,7 +16,7 @@ linux:
 
 .PHONY: clean
 clean:
-	rm -v ${NAME} | tee /dev/stderr ; rm -v ${NAME}.exe | tee /dev/stderr ; rm -v coverage.txt | tee /dev/stderr
+	rm -v ${NAME} | tee /dev/stderr ; rm -v ${NAME}.exe | tee /dev/stderr ; rm -rfv data | tee /dev/stderr ; rm -v diskmgmt.log | tee /dev/stderr
 
 .PHONY: fmt
 fmt:

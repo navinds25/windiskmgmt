@@ -55,7 +55,7 @@ func getCheckSum(file io.Reader) (uint32, error) {
 }
 
 // GetFileInfo returns FileInfo struct with info on files
-func GetFileInfo(filename string) (file diskdata.FileInfo, err error) {
+func GetFileInfo(filename string) (file *diskdata.FileInfo, err error) {
 	theFile, err := os.Open(filename)
 	if err != nil {
 		return file, errors.New("unable to open file")
@@ -72,7 +72,7 @@ func GetFileInfo(filename string) (file diskdata.FileInfo, err error) {
 	}
 	uInt64 := uint64(rawChecksum)
 	checksum := strconv.FormatUint(uInt64, 10)
-	file = diskdata.FileInfo{
+	file = &diskdata.FileInfo{
 		File:     filename,
 		Basename: path.Base(filename),
 		Checksum: checksum,

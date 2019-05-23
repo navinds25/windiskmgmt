@@ -24,6 +24,7 @@ func CheckHighPriorityFolders(input *diskdata.FileInfo) error {
 	reg2match := r2.FindString(input.File)
 	if reg2match != "" {
 		input.Priority = input.Priority + 1
+		input.DoNotDelete = true
 	}
 	return nil
 }
@@ -38,6 +39,8 @@ func CheckLowPriorityFiles(input *diskdata.FileInfo) error {
 	regmatch := r.FindString(input.Basename)
 	// Please note " == ", as decrementing int 0 will be a problem.
 	if regmatch == "" {
+		input.DoNotDelete = false
+	} else {
 		input.Priority = input.Priority + 1
 	}
 	return nil

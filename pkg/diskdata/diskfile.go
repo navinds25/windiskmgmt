@@ -23,13 +23,14 @@ type DiskFile interface {
 
 // FileInfo struct for file info
 type FileInfo struct {
-	File      string
-	Basename  string
-	Checksum  string
-	Size      int64
-	Modified  time.Time
-	Priority  int
-	DelStatus string
+	File        string
+	Basename    string
+	Checksum    string
+	Size        int64
+	Modified    time.Time
+	Priority    int
+	DelStatus   string
+	DoNotDelete bool
 }
 
 // GetInfo returns FileInfo struct with info on files

@@ -21,7 +21,7 @@ func InitDB(s Store) {
 type Store interface {
 	CloseDB() error
 	AddFile(*FileInfo) error
-	AddFileMap(map[string][]FileInfo) error
+	AddFileMap(map[string][]*FileInfo) error
 	//CheckFileExists(*FileInfo) ([]FileInfo, bool, error)
 	//ReadAllFiles() (<-chan *[]FileInfo, error)
 	ReadAllFiles() ([]*FileList, error)
@@ -35,7 +35,7 @@ type BadgerDB struct {
 }
 
 type FileList struct {
-	Files []FileInfo
+	Files []*FileInfo
 }
 
 // AddFile is the method for adding a file entry
@@ -49,9 +49,10 @@ func (badgerdb BadgerDB) AddFile(file *FileInfo) error {
 }
 
 // AddFileMap takes a map of files by  checksum and adds it to the database.
-func (badgerdb BadgerDB) AddFileMap(fileMap map[string][]FileInfo) error {
+func (badgerdb BadgerDB) AddFileMap(fileMap map[string][]*FileInfo) error {
 	//badgerdb.WTX = badgerdb.DB.NewTransaction(true)
 	wtx := badgerdb.DB.NewTransaction(true)
+	defer wtx.Discard()
 	for checksum, files := range fileMap {
 		var value bytes.Buffer
 		fileList := FileList{
